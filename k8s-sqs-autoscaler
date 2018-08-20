@@ -12,7 +12,10 @@ if __name__ == '__main__':
                       help="SQS Queue URL")
     parser.add_option("--kubernetes-deployment",
                       dest="kubernetes_deployment",
-                      help="")
+                      help="Name of the Deployment to control")
+    parser.add_option("--kubernetes-deployment-selector",
+                      dest="kubernetes_deployment_selector",
+                      help="Label selector to find the Deployment to control. Defaults to 'app=KUBERNETES_DEPLOYMENT' if not specified.")
     parser.add_option("--kubernetes-namespace",
                       dest="kubernetes_namespace",
                       help="")
