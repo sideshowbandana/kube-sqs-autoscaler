@@ -70,7 +70,11 @@ class SQSPoller:
 
     def deployment(self):
         logger.debug("loading deployment: {} from namespace: {}".format(self.options.kubernetes_deployment, self.options.kubernetes_namespace))
-        deployments = self.extensions_v1_beta1.list_namespaced_deployment(self.options.kubernetes_namespace, label_selector="app={}".format(self.options.kubernetes_deployment))
+        if self.options.kubernetes_deployment_selector:
+            selector = self.options.kubernetes_deployment_selector
+        else:
+            selector = "app={}".format(self.options.kubernetes_deployment)
+        deployments = self.extensions_v1_beta1.list_namespaced_deployment(self.options.kubernetes_namespace, label_selector=selector)
         return deployments.items[0]
 
     def update_deployment(self, deployment):
