@@ -4,13 +4,17 @@ Kubernetes pod autoscaler based on queue size in AWS SQS
 ## Usage
 Create a kubernetes deployment like this:
 ```
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-k8s-autoscaler
 spec:
   revisionHistoryLimit: 1
   replicas: 1
+  selector:
+    matchLabels:
+      app: my-k8s-autoscaler
+      tier: console  
   template:
     metadata:
       labels:
