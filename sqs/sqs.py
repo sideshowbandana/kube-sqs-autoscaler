@@ -13,7 +13,7 @@ class SQSPoller:
 
     def __init__(self, options):
         self.options = options
-        self.sqs_client = boto3.client('sqs')
+        self.sqs_client = boto3.client('sqs', region_name=options.aws_region)
         config.load_incluster_config()
         self.extensions_v1_beta1 = client.ExtensionsV1beta1Api()
         self.last_scale_up_time = time()
