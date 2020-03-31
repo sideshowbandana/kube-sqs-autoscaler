@@ -3,7 +3,7 @@
 from optparse import OptionParser
 from sqs import sqs
 from logs.log import logger
-import kubernetes.client.rest.ApiException
+from kubernetes.client.rest import ApiException
 
 
 if __name__ == '__main__':
