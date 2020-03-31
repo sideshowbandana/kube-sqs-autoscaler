@@ -3,6 +3,7 @@
 from optparse import OptionParser
 from sqs import sqs
 from logs.log import logger
+from kubernetes.client.rest import ApiException
 
 
 if __name__ == '__main__':
@@ -68,4 +69,12 @@ if __name__ == '__main__':
     if not options.kubernetes_deployment:
         parser.error('KUBERNETES_DEPLOYMENT not given')
     logger.debug(options)
-    sqs.run(options)
+
+   
+    while True: 
+        try:
+            sqs.run(options)
+        except ApiException as e:
+            logger.error(e)
+            logger.debug("sleeping 10 seconds after error")
+            time.sleep(10.0)
