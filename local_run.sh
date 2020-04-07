@@ -10,7 +10,7 @@ source build.sh || exit 1
 
 CONTAINER_NAME=${IMAGE_NAME}
 
-docker run -d -it --rm -p 80:80 \
+docker run -d -it --rm \
   -v ~/.aws/credentials:/root/.aws/credentials \
   --name $CONTAINER_NAME ${FULL_IMAGE_NAME} bash
 popd
