@@ -4,7 +4,7 @@ Kubernetes pod autoscaler based on queue size in AWS SQS
 ## Usage
 Create a kubernetes deployment like this:
 ```
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-k8s-autoscaler
@@ -21,10 +21,10 @@ spec:
         image: sideshowbandana/k8s-sqs-autoscaler:1.0.0
         command:
           - ./k8s-sqs-autoscaler
-          - --sqs-queue-url=https://sqs.$(AWS_REGION).amazonaws.com/$(AWS_ID)/$(SQS_QUEUE) # required
+          - --sqs-queue-name=${SQS_QUEUE_NAME}
           - --kubernetes-deployment=$(KUBERNETES_DEPLOYMENT)
           - --kubernetes-namespace=$(K8S_NAMESPACE) # optional
-          - --aws-region=us-west-2  #required
+          - --aws-region=${AWS_REGION}  #required
           - --poll-period=10 # optional
           - --scale-down-cool-down=30 # optional
           - --scale-up-cool-down=10 # optional
@@ -33,10 +33,16 @@ spec:
           - --max-pods=30 # optional
           - --min-pods=1 # optional
         env:
+          - name: AWS_REGION
+            value: us-east-1
           - name: K8S_NAMESPACE
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
+          - name: KUBERNETES_DEPLOYMENT
+            value: my-k8s-app
+          - name: SQS_QUEUE_NAME
+            value: sqs-queue-name
         resources:
           requests:
             memory: "64Mi"

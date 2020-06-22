@@ -10,6 +10,9 @@ if __name__ == '__main__':
     parser.add_option("--sqs-queue-url",
                       dest="sqs_queue_url",
                       help="SQS Queue URL")
+    parser.add_option("--sqs-queue-name",
+                      dest="sqs_queue_name",
+                      help="SQS Queue Name")
     parser.add_option("--kubernetes-deployment",
                       dest="kubernetes_deployment",
                       help="")
@@ -57,8 +60,8 @@ if __name__ == '__main__':
 
     (options, args) = parser.parse_args()
 
-    if not options.sqs_queue_url:
-        parser.error('SQS_QUEUE_URL not given')
+    if not (options.sqs_queue_url or options.sqs_queue_name):
+        parser.error('SQS_QUEUE_URL / SQS_QUEUE_NAME not given')
     if not options.kubernetes_deployment:
         parser.error('KUBERNETES_DEPLOYMENT not given')
     if not options.aws_region:
