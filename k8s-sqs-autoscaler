@@ -72,10 +72,9 @@ if __name__ == '__main__':
     logger.debug(options)
 
    
-    while True: 
-        try:
-            sqs.run(options)
-        except ApiException as e:
-            logger.error(e)
-            logger.debug("sleeping 10 seconds after error")
-            time.sleep(10.0)
+    try:
+        sqs.run(options)
+    except Exception as e:
+        logger.error(e)
+        logger.debug("sleeping 10 seconds after error. and then exiting")
+        time.sleep(10.0)
