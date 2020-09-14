@@ -97,4 +97,5 @@ def run(options):
     poll_period is set as as part of k8s deployment env variable
     sqs_queue_url is set as as part of k8s deployment env variable
     """
+    logger.info("Starting autoscaler")
     SQSPoller(options).run()

@@ -1,4 +1,4 @@
-FROM python:3.6
+FROM python:3.8.5
 WORKDIR /usr/src/app
 
 COPY scripts/dependencies.sh /tmp/dependencies.sh
