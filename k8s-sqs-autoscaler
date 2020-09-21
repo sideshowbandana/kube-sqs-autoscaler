@@ -78,3 +78,5 @@ if __name__ == '__main__':
         logger.error(e)
         logger.debug("sleeping 10 seconds after error. and then exiting")
         time.sleep(10.0)
+        import sys
+        sys.exit(1)
