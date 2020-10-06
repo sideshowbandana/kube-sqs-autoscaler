@@ -1,0 +1,10 @@
+python3 ./k8s-sqs-autoscaler --sqs-queue-url=https://sqs.us-east-1.amazonaws.com/992173438675/sharethis-datapipe-data-in_prod \
+--kubernetes-deployment=datapipe-thirdparty-mergelog --kubernetes-namespace=default \
+--aws-region=us-east-1 \
+--poll-period=1 \
+--scale-down-cool-down=120 \
+--scale-up-cool-down=60 \
+--scale-up-messages=7 \
+--scale-down-messages=2 \
+--max-pods=400 \
+--min-pods=50

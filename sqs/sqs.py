@@ -8,14 +8,18 @@ class SQSPoller:
 
     options = None
     sqs_client = None
-    extensions_v1_beta1 = None
+    k8client = None
     last_message_count = None
 
     def __init__(self, options):
         self.options = options
         self.sqs_client = boto3.client('sqs')
-        config.load_incluster_config()
-        self.extensions_v1_beta1 = client.ExtensionsV1beta1Api()
+        # use this on your mac.  must set KUBECONFIG env var
+        config.load_kube_config()
+        # this is for the cluster
+        #config.load_incluster_config()
+        self.k8client = client.AppsV1Api()
+
         self.last_scale_up_time = time()
         self.last_scale_down_time = time()
 
@@ -69,13 +73,15 @@ class SQSPoller:
             logger.info("Min pods reached")
 
     def deployment(self):
-        logger.debug("loading deployment: {} from namespace: {}".format(self.options.kubernetes_deployment, self.options.kubernetes_namespace))
-        deployments = self.extensions_v1_beta1.list_namespaced_deployment(self.options.kubernetes_namespace, label_selector="app={}".format(self.options.kubernetes_deployment))
+
+        logger.info("loading deployment: {} from namespace: {}".format(self.options.kubernetes_deployment, self.options.kubernetes_namespace))
+        deployments = self.k8client.list_namespaced_deployment(self.options.kubernetes_namespace,
+                                                        label_selector="app={}".format(self.options.kubernetes_deployment))
         return deployments.items[0]
 
     def update_deployment(self, deployment):
         # Update the deployment
-        api_response = self.extensions_v1_beta1.patch_namespaced_deployment(
+        api_response = self.k8client.patch_namespaced_deployment(
             name=self.options.kubernetes_deployment,
             namespace=self.options.kubernetes_namespace,
             body=deployment)
@@ -92,4 +98,5 @@ def run(options):
     poll_period is set as as part of k8s deployment env variable
     sqs_queue_url is set as as part of k8s deployment env variable
     """
-    SQSPoller(options).run()
+    poller = SQSPoller(options)
+    poller.run()
