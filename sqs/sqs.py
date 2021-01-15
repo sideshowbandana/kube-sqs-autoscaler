@@ -3,21 +3,27 @@ import os
 from time import sleep, time
 from logs.log import logger
 from kubernetes import client, config
+from prometheus_client import start_http_server, Gauge
 
 class SQSPoller:
 
     options = None
     sqs_client = None
+    sqs_resource = None
     apps_v1 = None
     last_message_count = None
-
+ 
     def __init__(self, options):
         self.options = options
-        self.sqs_client = boto3.client('sqs')
+        self.sqs_client = boto3.client('sqs', region_name=self.options.aws_region)
+        self.sqs_resource = boto3.resource('sqs', region_name=self.options.aws_region)
         config.load_incluster_config()
         self.apps_v1 = client.AppsV1Api()
         self.last_scale_up_time = time()
         self.last_scale_down_time = time()
+        self.approximate_number_of_messages = Gauge('approximate_number_of_messages', 'Number of messages available', ['queue'])
+        self.approximate_number_of_messages_delayed = Gauge('approximate_number_of_messages_delayed', 'Number of messages delayed',['queue'])
+        self.approximate_number_of_messages_not_visible = Gauge('approximate_number_of_messages_not_visible','Number of messages in flight', ['queue'])
 
     def message_count(self):
         response = self.sqs_client.get_queue_attributes(
@@ -45,7 +51,7 @@ class SQSPoller:
                 logger.debug("Waiting for scale down cooldown")
 
         # code for scale to use msg_count
-        sleep(self.options.poll_period)
+        
 
     def scale_up(self):
         deployment = self.deployment()
@@ -82,11 +88,31 @@ class SQSPoller:
             body=deployment)
         logger.debug("Deployment updated. status='%s'" % str(api_response.status))
 
+   
+    def update_metrics(self):
+        """
+        Updates the values of the prometheus metrics with the values of the attributes from each SQS queue
+        """
+        queues = self.options.queues_to_monitor.split(",")
+        for queue_name in queues:
+            q = self.sqs_resource.get_queue_by_name(QueueName=queue_name)
+            logger.debug(f"Updating metrics for queue [{queue_name}]")
+            self.approximate_number_of_messages.labels(queue=queue_name).set(
+                q.attributes.get('ApproximateNumberOfMessages'))
+            self.approximate_number_of_messages_not_visible.labels(queue=queue_name).set(
+                q.attributes.get('ApproximateNumberOfMessagesNotVisible'))
+            self.approximate_number_of_messages_delayed.labels(queue=queue_name).set(
+                q.attributes.get('ApproximateNumberOfMessagesDelayed'))
+
     def run(self):
         options = self.options
+        start_http_server(self.options.prometheus_port)
         logger.debug("Starting poll for {} every {}s".format(options.sqs_queue_url, options.poll_period))
+        logger.info("Started metrics exporter at port 9095")
         while True:
             self.poll()
+            self.update_metrics()
+            sleep(self.options.poll_period)
 
 def run(options):
     """

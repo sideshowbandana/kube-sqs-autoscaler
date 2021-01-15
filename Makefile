@@ -1,6 +1,6 @@
-ORG=133072409765.dkr.ecr.eu-west-1.amazonaws.com
+ORG=926150052987.dkr.ecr.eu-west-1.amazonaws.com
 PROJ=k8s-sqs-autoscaler
-VERSION=1.0.2
+VERSION=1.1.0
 
 .PHONY=release
 release:

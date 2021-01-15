@@ -3,6 +3,7 @@
 from optparse import OptionParser
 from sqs import sqs
 from logs.log import logger
+import os
 
 
 if __name__ == '__main__':
@@ -18,6 +19,7 @@ if __name__ == '__main__':
                       help="")
     parser.add_option("--aws-region",
                       dest="aws_region",
+                      default=os.environ.get('AWS_DEFAULT_REGION', 'eu-west-1'),
                       help="")
     parser.add_option("--poll-period",
                       dest="poll_period",
@@ -54,6 +56,15 @@ if __name__ == '__main__':
                       type="int",
                       default=1,
                       help="")
+    parser.add_option("--prometheus-port",
+                      dest="prometheus_port",
+                      type="int",
+                      default=8080,
+                      help="")
+    parser.add_option("--queues-to-monitor",
+                      dest="queues_to_monitor",
+                      type="string",
+                      help="")
 
     (options, args) = parser.parse_args()
 
@@ -67,5 +78,7 @@ if __name__ == '__main__':
         parser.error('KUBERNETES_NAMESPACE not given')
     if not options.kubernetes_deployment:
         parser.error('KUBERNETES_DEPLOYMENT not given')
+    if not options.queues_to_monitor:
+        parser.error('QUEUES_TO_MONITOR not given')
     logger.debug(options)
     sqs.run(options)
